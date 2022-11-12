@@ -38,8 +38,8 @@ The filters correspond to the following set of experiments:
 ```
 openai/baselines' PPO2 (average by the episodic returns of the last 100 training episodes, then average by 3 random seeds) median hns across 57 atari games: 0.7959851540635047
 CleanRL's ppo_atari_envpool_xla_jax_truncation.py (average by the last 100 "data points" (see `README.md`), then average by 3 random seeds) median hns across 57 atari games: 0.9783505154639175
- CleanRL's ppo_atari_envpool_xla_jax.py median hns across 57 atari games: 1.0229348923937533
- CleanRL's ppo_atari_envpool_xla_vclip_jax.py median hns across 57 atari games: 0.9258005194735464
+CleanRL's ppo_atari_envpool_xla_jax.py median hns across 57 atari games: 1.0229348923937533
+CleanRL's ppo_atari_envpool_xla_vclip_jax.py median hns across 57 atari games: 0.9258005194735464
  ```
 
 ## Get complete metrics

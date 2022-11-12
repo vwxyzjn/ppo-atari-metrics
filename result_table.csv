@@ -1,4 +1,4 @@
-"openai/baselines' PPO2 (average by the episodic returns of the last 100 training episodes, then average by 3 random seeds)","CleanRL's ppo_atari_envpool_xla_jax_truncation.py (average by the last 100 ""data points"" (see `README.md`), then average by 3 random seeds)", CleanRL's ppo_atari_envpool_xla_jax.py, CleanRL's ppo_atari_envpool_xla_vclip_jax.py
+"openai/baselines' PPO2 (average by the episodic returns of the last 100 training episodes, then average by 3 random seeds)","CleanRL's ppo_atari_envpool_xla_jax_truncation.py (average by the last 100 ""data points"" (see `README.md`), then average by 3 random seeds)",CleanRL's ppo_atari_envpool_xla_jax.py,CleanRL's ppo_atari_envpool_xla_vclip_jax.py
 Alien-v5,1705.80 ± 439.74,1755.00 ± 342.54,1736.39 ± 68.65,1849.70 ± 212.53
 Amidar-v5,585.99 ± 52.92,843.47 ± 31.70,653.53 ± 44.06,629.55 ± 28.58
 Assault-v5,4878.67 ± 815.64,6248.95 ± 261.93,6791.74 ± 420.03,4686.32 ± 165.95
