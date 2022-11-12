@@ -27,12 +27,20 @@ The filters correspond to the following set of experiments:
 * `ppo_atari_envpool_xla_vclip_jax?metric=charts/avg_episodic_return` corresponds to the runs from CleanRL's PPO + JAX + EnvPool's XLA interface that implements value function clipping like done in `openai/baselines`' PPO2
     * ⛔️ bug: envpool's vectorized environment is not exactly compatible with `openai/baselines`' vectorized environment, which causes an off by one observation error. See [docs](https://docs.cleanrl.dev/rl-algorithms/ppo/#ppo_atari_envpool_xla_jaxpy)
 
-Learning curves: the `compare.png` shows the learning curves which subsamples 10000 data points and and interpolate. The curves are smoothed by a rolling average with a window size 100 and their shaded region represents the standard deviation.
+**Learning curves:** the `compare.png` shows the learning curves which subsamples 10000 data points and and interpolate. The curves are smoothed by a rolling average with a window size 100 and their shaded region represents the standard deviation.
 
-Result table: the `result_table.md` shows the average episodic return of the last 100 episodes. For each random seed $i$ (we have 3 random seeds for each set of experiments), we calculate the average episodic return of the last 100 training episodes as $a_i$. We then average the $a_i$'s over all random seeds to get the final average episodic return and report its standard deviation. This type of evaluation is known as an implicit evaluation method ([Machado et al., 2017](https://arxiv.org/pdf/1709.06009.pdf)) which aligns better with the general goal of RL which is continual learning. This method also detects issues with catastrophic forgetting compared to the evaluation method that evalutes the best model.
+**Result table:** the `result_table.md` shows the average episodic return of the last 100 episodes. For each random seed $i$ (we have 3 random seeds for each set of experiments), we calculate the average episodic return of the last 100 training episodes as $a_i$. We then average the $a_i$'s over all random seeds to get the final average episodic return and report its standard deviation. This type of evaluation is known as an implicit evaluation method ([Machado et al., 2017](https://arxiv.org/pdf/1709.06009.pdf)) which aligns better with the general goal of RL which is continual learning. This method also detects issues with catastrophic forgetting compared to the evaluation method that evalutes the best model.
 
 * For runs that use the XLA interface (e.g, `ppo_atari_envpool_xla_jax`, `ppo_atari_envpool_xla_jax_truncation`, `ppo_atari_envpool_xla_vclip_jax`), we report using the last 100 recorded "data points" which corresponds to the last 100 * 8 * 128 = 102400 steps, where 8 is the number of environments, 128 is the number of steps in the rollout phase. Due the limitation XLA, each "data point" is the average of the *latest episodic returns* of the 8 environments during training after each rollout phase, and the data points could be stale or have been updated several times. This means we are reporting the average episodic return of an unknown number of episodes.
 
+**Human Normalized Score:** run `python hns.py` which generates the following:
+
+```
+openai/baselines' PPO2 (average by the episodic returns of the last 100 training episodes, then average by 3 random seeds) median hns across 57 atari games: 0.7959851540635047
+CleanRL's ppo_atari_envpool_xla_jax_truncation.py (average by the last 100 "data points" (see `README.md`), then average by 3 random seeds) median hns across 57 atari games: 0.9783505154639175
+ CleanRL's ppo_atari_envpool_xla_jax.py median hns across 57 atari games: 1.0229348923937533
+ CleanRL's ppo_atari_envpool_xla_vclip_jax.py median hns across 57 atari games: 0.9258005194735464
+ ```
 
 ## Get complete metrics
 
