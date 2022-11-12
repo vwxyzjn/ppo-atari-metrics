@@ -1,5 +1,6 @@
 # PPO Atari metrics
 
+
 ## Get started
 
 To test it out the basic functions, run the following commands:
@@ -12,6 +13,8 @@ python rlops.py --wandb-project-name envpool-atari \
     --env-ids Alien-v5 Amidar-v5 Assault-v5 \
     --output-filename compare.png --report
 ```
+
+The `rlops.py` utility is directly taken from https://github.com/vwxyzjn/cleanrl/pull/307 with a minor hack. 
 
 The filters correspond to the following set of experiments:
 
