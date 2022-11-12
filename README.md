@@ -1,4 +1,4 @@
-# rlops-plot
+# PPO Atari metrics
 
 ## Get started
 
