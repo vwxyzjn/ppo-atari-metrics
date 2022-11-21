@@ -181,6 +181,7 @@ def compare(
 
     print(result_table)
     result_table.to_markdown(open("result_table.md", "w"))
+    result_table.to_csv(open("result_table.csv", "w"))
 
     h, l = ax.get_legend_handles_labels()
     fig.legend(h, l, loc="upper center", ncol=ncols)
@@ -224,6 +225,9 @@ if __name__ == "__main__":
             # HACK
             if exp_name == "baselines-ppo2-cnn":
                 env_id = env_id.replace("-v5", "NoFrameskip-v4")
+            if "rlops-pilot" in query["tag"] and "continuous_action" in exp_name:
+                    env_id = env_id.replace("-v4", "-v2")
+
             runsets += [
                 Runset(
                     name=f"{exp_name} ({query})",
