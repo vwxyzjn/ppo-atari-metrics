@@ -74,3 +74,17 @@ python rlops.py --wandb-project-name envpool-atari \
 
 
 ![](compare.png)
+
+
+
+## Plotting SB3 and SBX results
+
+```
+python rlops.py --wandb-project-name sb3 \
+    --wandb-entity openrlbenchmark \
+    --filters 'tqc?ceik=env&cen=algo&metric=rollout/ep_rew_mean' 'sac?ceik=env&cen=algo&wpn=sbx&we=openrlbenchmark&metric=rollout/ep_rew_mean' \
+    --env-ids Swimmer-v3 HalfCheetah-v3 \
+    --output-filename compare.png --report
+```
+
+![](static/sb3.png)

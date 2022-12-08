@@ -92,6 +92,7 @@ def compare(
     metric_last_n_average_window: int,
     scan_history: bool = False,
     output_filename: str = "compare.png",
+    custom_exp_name: str = "exp_name",
 ):
     blocks = []
     for idx, env_id in enumerate(env_ids):
@@ -132,7 +133,7 @@ def compare(
         custom_run_colors = {}
         for runsets in runsetss:
             custom_run_colors.update(
-                {(runsets[idx].report_runset.name, runsets[idx].runs[0].config["exp_name"]): runsets[idx].color}
+                {(runsets[idx].report_runset.name, runsets[idx].runs[0].config[custom_exp_name]): runsets[idx].color}
             )
         pg.custom_run_colors = custom_run_colors  # IMPORTANT: custom_run_colors is implemented as a custom `setter` that needs to be overwritten unlike regular dictionaries
         blocks += [pg]
@@ -218,6 +219,7 @@ if __name__ == "__main__":
         wandb_project_name = query["wpn"][0] if "wpn" in query else args.wandb_project_name
         wandb_entity = query["we"][0] if "we" in query else args.wandb_entity
         custom_env_id_key = query["ceik"][0] if "ceik" in query else "env_id"
+        custom_exp_name = query["cen"][0] if "cen" in query else "exp_name"
 
         print(query, wandb_project_name, wandb_entity)
         runsets = []
@@ -225,8 +227,6 @@ if __name__ == "__main__":
             # HACK
             if exp_name == "baselines-ppo2-cnn":
                 env_id = env_id.replace("-v5", "NoFrameskip-v4")
-            if "rlops-pilot" in query["tag"] and "continuous_action" in exp_name:
-                    env_id = env_id.replace("-v4", "-v2")
 
             runsets += [
                 Runset(
@@ -236,12 +236,12 @@ if __name__ == "__main__":
                             {f"config.{custom_env_id_key}.value": env_id},
                             *include_tag_groups,
                             *user,
-                            {"config.exp_name.value": exp_name},
+                            {f"config.{custom_exp_name}.value": exp_name},
                         ]
                     },
                     entity=wandb_entity,
                     project=wandb_project_name,
-                    groupby="exp_name",
+                    groupby=custom_exp_name,
                     metric=metric,
                     color=color,
                 )
@@ -260,6 +260,7 @@ if __name__ == "__main__":
         rolling=args.rolling,
         metric_last_n_average_window=args.metric_last_n_average_window,
         scan_history=args.scan_history,
+        custom_exp_name=custom_exp_name,
     )
     if args.report:
         print("saving report")
