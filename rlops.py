@@ -36,6 +36,10 @@ def parse_args():
         help="the rolling window for smoothing the curves")
     parser.add_argument("--metric-last-n-average-window", type=int, default=100,
         help="the last n number of episodes to average metric over in the result table")
+    parser.add_argument("--ncols", type=int, default=2,
+        help="the number of columns in the chart")
+    parser.add_argument("--ncols-legend", type=int, default=2,
+        help="the number of legend columns in the chart")
     parser.add_argument("--scan-history", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
         help="if toggled, we will pull the complete metrics from wandb instead of sampling 500 data points (recommended for generating tables)")
     parser.add_argument("--report", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
@@ -47,6 +51,7 @@ def parse_args():
 def create_hypothesis(name: str, wandb_runs: List[wandb.apis.public.Run], scan_history: bool = False, metric: str = "") -> Hypothesis:
     runs = []
     for idx, run in enumerate(wandb_runs):
+        print(run, run.url)
         if scan_history:
             wandb_run = pd.DataFrame([row for row in run.scan_history()])
         else:
@@ -60,12 +65,13 @@ def create_hypothesis(name: str, wandb_runs: List[wandb.apis.public.Run], scan_h
 
 
 class Runset:
-    def __init__(self, name: str, filters: dict, entity: str, project: str, groupby: str = "", metric: str = "charts/episodic_return", color: str = "#000000"):
+    def __init__(self, name: str, filters: dict, entity: str, project: str, groupby: str = "", exp_name: str = "exp_name", metric: str = "charts/episodic_return", color: str = "#000000"):
         self.name = name
         self.filters = filters
         self.entity = entity
         self.project = project
         self.groupby = groupby
+        self.exp_name = exp_name
         self.metric = metric
         self.color = color
 
@@ -88,11 +94,11 @@ def compare(
     runsetss: List[List[Runset]],
     env_ids: List[str],
     ncols: int,
+    ncols_legend: int,
     rolling: int,
     metric_last_n_average_window: int,
     scan_history: bool = False,
     output_filename: str = "compare.png",
-    custom_exp_name: str = "exp_name",
 ):
     blocks = []
     for idx, env_id in enumerate(env_ids):
@@ -133,7 +139,7 @@ def compare(
         custom_run_colors = {}
         for runsets in runsetss:
             custom_run_colors.update(
-                {(runsets[idx].report_runset.name, runsets[idx].runs[0].config[custom_exp_name]): runsets[idx].color}
+                {(runsets[idx].report_runset.name, runsets[idx].runs[0].config[runsets[idx].exp_name]): runsets[idx].color}
             )
         pg.custom_run_colors = custom_run_colors  # IMPORTANT: custom_run_colors is implemented as a custom `setter` that needs to be overwritten unlike regular dictionaries
         blocks += [pg]
@@ -147,6 +153,9 @@ def compare(
         # sharex=True,
         # sharey=True,
     )
+    if len(env_ids) == 1:
+        axes = np.array([axes])
+    axes_flatten = axes.flatten()
 
     result_table = pd.DataFrame(index=env_ids, columns=[runsets[0].name for runsets in runsetss])
     for idx, env_id in enumerate(env_ids):
@@ -166,7 +175,7 @@ def compare(
             result += [f"{raw_result.mean():.2f} ± {raw_result.std():.2f}"]
         result_table.loc[env_id] = result
 
-        ax = axes.flatten()[idx]
+        ax = axes_flatten[idx]
         ex.plot(
             ax=ax,
             title=env_id,
@@ -184,13 +193,12 @@ def compare(
     result_table.to_markdown(open("result_table.md", "w"))
     result_table.to_csv(open("result_table.csv", "w"))
 
-    h, l = ax.get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", ncol=ncols)
-    num_legend_rows = len(h) // 2
-    # dynamically adjust the top of subplot to make room for legend
-    fig.subplots_adjust(top=1 - 0.07 * num_legend_rows)
+    # add legend
+    h, l = axes_flatten[0].get_legend_handles_labels()
+    fig.legend(h, l, loc="lower center", ncol=ncols_legend, bbox_to_anchor=(0.5, 1.0), bbox_transform=fig.transFigure)
+
     # remove the empty axes
-    for ax in axes.flatten()[len(env_ids) :]:
+    for ax in axes_flatten[len(env_ids) :]:
         ax.remove()
 
     print(f"saving figure to {output_filename}")
@@ -227,6 +235,8 @@ if __name__ == "__main__":
             # HACK
             if exp_name == "baselines-ppo2-cnn":
                 env_id = env_id.replace("-v5", "NoFrameskip-v4")
+            if exp_name == "ppo_continuous_action" and "rlops-pilot" in query["tag"]:
+                env_id = env_id.replace("-v4", "-v2")
 
             runsets += [
                 Runset(
@@ -242,6 +252,7 @@ if __name__ == "__main__":
                     entity=wandb_entity,
                     project=wandb_project_name,
                     groupby=custom_exp_name,
+                    exp_name=custom_exp_name,
                     metric=metric,
                     color=color,
                 )
@@ -256,11 +267,11 @@ if __name__ == "__main__":
         runsetss,
         args.env_ids,
         output_filename=args.output_filename,
-        ncols=5,
+        ncols=args.ncols,
+        ncols_legend=args.ncols_legend,
         rolling=args.rolling,
         metric_last_n_average_window=args.metric_last_n_average_window,
         scan_history=args.scan_history,
-        custom_exp_name=custom_exp_name,
     )
     if args.report:
         print("saving report")
